@@ -50,33 +50,12 @@ MentorLog provides a **centralized digital platform** where:
 
 ## 🏗️ System Architecture (High Level)
 
-Frontend (Admin Web / Mobile Apps)
-↓
-Backend API (Business Logic & Auth)
-↓
+Frontend (Admin Web / Mobile Apps) ->
+Backend API (Business Logic & Auth)->
 Database (Structured Academic Data)
 
 
 The system is built as a **modular, scalable product**, not a single monolithic script.
-
----
-
-## 📂 Project Structure
-
-mentorlog/
-│
-├── backend/ # Backend APIs, authentication, database logic
-├── admin-web/ # Web dashboard for admins and tutors
-├── mobile-app/ # Student-facing mobile application
-├── tutor_mobile/ # Tutor-specific mobile application
-├── apks/ # Build artifacts (APK files)
-├── .gitignore
-├── README.md
-└── LICENSE
-
-Each module is developed independently but designed to work together.
-
----
 
 ## 🛠️ Tech Stack
 
