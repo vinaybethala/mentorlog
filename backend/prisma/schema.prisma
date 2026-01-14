@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TUTOR
+  STUDENT
+  PARENT
+}
+
+enum HomeworkStatus {
+  PENDING
+  COMPLETED
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                String         @id @default(uuid())
+  email             String         @unique
+  password          String
+  name              String
+  role              Role           @default(STUDENT)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  // Profile extensions
+  studentProfile    Student?
+  tutorProfile      Tutor?
+  parentProfile     Parent?
+  
+  // Relations
+  assignedHomeworks Homework[]     @relation("HomeworkAssignedBy")
+  approvedLeaves    Leave[]        @relation("LeaveApprovedBy")
+  notifications     Notification[]
+}
+
+model Student {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id])
+  parentId  String?
+  parent    Parent?    @relation(fields: [parentId], references: [id])
+  
+  sessions  Session[]
+  homeworks Homework[]
+  
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Tutor {
+  id        String    @id @default(uuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id])
+  
+  sessions  Session[]
+  leaves    Leave[]
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Parent {
+  id        String    @id @default(uuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id])
+  
+  students  Student[]
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  tutorId   String
+  tutor     Tutor    @relation(fields: [tutorId], references: [id])
+  
+  subject   String
+  topic     String
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int?     // stored in minutes
+  
+  media     Media[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Homework {
+  id           String         @id @default(uuid())
+  studentId    String
+  student      Student        @relation(fields: [studentId], references: [id])
+  assignedById String
+  assignedBy   User           @relation("HomeworkAssignedBy", fields: [assignedById], references: [id])
+  
+  title        String
+  description  String?
+  status       HomeworkStatus @default(PENDING)
+  
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Leave {
+  id           String      @id @default(uuid())
+  tutorId      String
+  tutor        Tutor       @relation(fields: [tutorId], references: [id])
+  approvedById String?
+  approvedBy   User?       @relation("LeaveApprovedBy", fields: [approvedById], references: [id])
+  
+  reason       String
+  startDate    DateTime
+  endDate      DateTime
+  status       LeaveStatus @default(PENDING)
+  
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  type      String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Media {
+  id        String   @id @default(uuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id])
+  
+  url       String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
