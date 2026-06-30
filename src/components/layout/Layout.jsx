@@ -1,7 +1,8 @@
 import React from 'react';
 import { Outlet, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LogOut, LayoutDashboard, Users, BookOpen } from 'lucide-react';
+import { LogOut, LayoutDashboard, Users, BookOpen, DollarSign, BarChart2 } from 'lucide-react';
+import { NotificationBell } from '../ui/NotificationBell';
 import './Layout.css';
 
 const navItems = {
@@ -9,13 +10,15 @@ const navItems = {
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
     { label: 'Students', path: '/admin/students', icon: Users },
     { label: 'Tutors', path: '/admin/tutors', icon: BookOpen },
+    { label: 'Fee Management', path: '/admin/fees', icon: DollarSign },
+    { label: 'Reports', path: '/admin/reports', icon: BarChart2 },
   ],
   tutor: [
     { label: 'Dashboard', path: '/tutor', icon: LayoutDashboard },
-    { label: 'Student Log', path: '/tutor/log', icon: BookOpen },
+    { label: 'Session Log', path: '/tutor/log', icon: BookOpen },
   ],
   student: [
-    { label: 'My Progress', path: '/student', icon: LayoutDashboard },
+    { label: 'My Dashboard', path: '/student', icon: LayoutDashboard },
   ],
   parent: [
     { label: 'Parent Portal', path: '/parent', icon: LayoutDashboard },
@@ -74,6 +77,7 @@ export const Layout = ({ role }) => {
             <h2>Welcome back, {user.name}</h2>
           </div>
           <div className="header-profile">
+            <NotificationBell />
             <div className="avatar">{user.name.charAt(0)}</div>
           </div>
         </header>

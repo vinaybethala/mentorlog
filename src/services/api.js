@@ -324,5 +324,136 @@ export const api = {
       totalLogs: db.progressLogs.length,
       recentActivity: db.progressLogs.slice(-5).reverse()
     };
+  },
+
+  getNotifications: async (userId) => {
+    const db = getDB();
+    return (db.notifications || [])
+      .filter(n => n.userId === userId)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  },
+
+  markNotificationRead: async (id) => {
+    const db = getDB();
+    const notif = db.notifications.find(n => n.id === id);
+    if (notif) notif.isRead = true;
+    saveDB(db);
+  },
+
+  createFeePayment: async (studentId, amount) => {
+    const db = getDB();
+    const feeRecord = db.fees.find(f => f.studentId === studentId);
+    if (!feeRecord) throw new Error('Fee record not found');
+    feeRecord.paidAmount += Number(amount);
+    if (feeRecord.paidAmount >= feeRecord.totalAmount) feeRecord.status = 'Paid';
+    else feeRecord.status = 'Partial';
+    feeRecord.history.push({
+      amount: Number(amount),
+      date: new Date().toISOString(),
+      receipt: 'REC-' + generateId().toUpperCase()
+    });
+    db.notifications.push({
+      id: 'n' + generateId(),
+      userId: studentId,
+      message: `Payment of ₹${amount} received. Thank you!`,
+      type: 'fee',
+      isRead: false,
+      createdAt: new Date().toISOString()
+    });
+    saveDB(db);
+    return feeRecord;
+  },
+
+  createFeeRecord: async (data) => {
+    const db = getDB();
+    const newFee = {
+      id: 'fee' + generateId(),
+      studentId: data.studentId,
+      totalAmount: Number(data.totalAmount),
+      paidAmount: 0,
+      dueDate: data.dueDate,
+      status: 'Unpaid',
+      history: []
+    };
+    db.fees.push(newFee);
+    saveDB(db);
+    return newFee;
+  },
+
+  getAdvancedStats: async () => {
+    const db = getDB();
+    const totalStudents = db.students.length;
+    const totalTutors = db.tutors.length;
+    const activeStudents = db.students.filter(s => {
+      const u = db.users.find(u => u.id === s.userId);
+      return u?.status === 'Active';
+    }).length;
+
+    // Attendance stats
+    const totalAtt = db.attendance.length;
+    const presentAtt = db.attendance.filter(a => a.status === 'Present').length;
+    const attRate = totalAtt > 0 ? Math.round((presentAtt / totalAtt) * 100) : 100;
+
+    // Homework stats
+    const totalHw = db.homework.length;
+    const completedHw = db.homework.filter(h => h.status === 'Completed').length;
+    const hwRate = totalHw > 0 ? Math.round((completedHw / totalHw) * 100) : 100;
+
+    // Fee stats
+    const totalDue = db.fees.reduce((sum, f) => sum + f.totalAmount, 0);
+    const totalPaid = db.fees.reduce((sum, f) => sum + f.paidAmount, 0);
+
+    // At-risk students (< 70% attendance OR missing homework > 2)
+    const atRiskStudentIds = new Set();
+    db.students.forEach(student => {
+      const sAtt = db.attendance.filter(a => a.studentId === student.userId);
+      const sPresent = sAtt.filter(a => a.status === 'Present').length;
+      const attPct = sAtt.length > 0 ? (sPresent / sAtt.length) * 100 : 100;
+      const missingHw = db.homework.filter(h => h.studentId === student.userId && h.status === 'Missing').length;
+      const noRecentLog = !db.progressLogs.find(l => l.studentId === student.userId &&
+        new Date(l.date) > new Date(Date.now() - 14 * 86400000));
+      if (attPct < 70 || missingHw > 2 || noRecentLog) atRiskStudentIds.add(student.userId);
+    });
+
+    // Subject distribution
+    const subjectMap = {};
+    db.students.forEach(s => {
+      (s.subjects || []).forEach(sub => {
+        subjectMap[sub] = (subjectMap[sub] || 0) + 1;
+      });
+    });
+    const subjectDistribution = Object.entries(subjectMap).map(([name, count]) => ({ name, count }));
+
+    // Monthly attendance trend (last 6 months)
+    const monthlyAtt = {};
+    db.attendance.forEach(a => {
+      const month = a.date?.substring(0, 7);
+      if (month) {
+        if (!monthlyAtt[month]) monthlyAtt[month] = { present: 0, total: 0 };
+        monthlyAtt[month].total++;
+        if (a.status === 'Present') monthlyAtt[month].present++;
+      }
+    });
+    const attendanceTrend = Object.entries(monthlyAtt)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
+      .map(([month, data]) => ({
+        month,
+        rate: Math.round((data.present / data.total) * 100)
+      }));
+
+    return {
+      totalStudents,
+      totalTutors,
+      activeStudents,
+      attRate,
+      hwRate,
+      totalDue,
+      totalPaid,
+      atRiskCount: atRiskStudentIds.size,
+      subjectDistribution,
+      attendanceTrend,
+      recentActivity: db.progressLogs.slice(-8).reverse()
+    };
   }
 };

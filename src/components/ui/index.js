@@ -4,3 +4,4 @@ export * from './Input';
 export * from './Badge';
 export * from './Modal';
 export * from './ScheduleWidget';
+export * from './NotificationBell';
