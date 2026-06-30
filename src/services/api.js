@@ -4,28 +4,27 @@ const generateId = () => Math.random().toString(36).substring(2, 9);
 // Initial Seed Data
 const seedData = {
   users: [
-    { id: 'u1', role: 'admin', email: 'admin@mentorlog.com', password: 'password', status: 'Active' },
     { id: 'u2', role: 'tutor', email: 'tutor1@mentorlog.com', password: 'password', status: 'Active' },
     { id: 'u3', role: 'student', email: 'student1@mentorlog.com', password: 'password', status: 'Active' },
     { id: 'u4', role: 'parent', email: 'parent1@mentorlog.com', password: 'password', status: 'Active' },
   ],
   students: [
-    { 
-      id: 's1', userId: 'u3', name: 'Alice Smith', 
-      age: '15', dob: '2011-05-12', gender: 'Female', 
-      class: 'Grade 10', subjects: ['Math', 'Science'], 
+    {
+      id: 's1', userId: 'u3', name: 'Alice Smith',
+      age: '15', dob: '2011-05-12', gender: 'Female',
+      class: 'Grade 10', subjects: ['Math', 'Science'],
       parentName: 'Bob Smith', parentContact: '555-0101', parentEmail: 'parent1@mentorlog.com',
-      address: '123 Main St', admissionDate: '2023-09-01' 
+      address: '123 Main St', admissionDate: '2023-09-01'
     },
   ],
   parents: [
     { id: 'p1', userId: 'u4', studentIds: ['u3'], name: 'Bob Smith', contact: '555-0101' }
   ],
   tutors: [
-    { 
-      id: 't1', userId: 'u2', name: 'John Doe', 
-      age: '30', dob: '1996-02-15', gender: 'Male', 
-      contact: '555-0202', subjects: ['Math', 'Science'], 
+    {
+      id: 't1', userId: 'u2', name: 'John Doe',
+      age: '30', dob: '1996-02-15', gender: 'Male',
+      contact: '555-0202', subjects: ['Math', 'Science'],
       qualification: 'B.Sc Mathematics', experience: '5 years',
       address: '456 Elm St', bankDetails: 'Bank of America - 1234',
       bankName: 'Bank of America', bankAccount: '123456789', ifsc: 'BOA123', branch: 'Downtown',
@@ -45,7 +44,7 @@ const seedData = {
     { id: 'sch1', class: 'Grade 10', subject: 'Math', tutorId: 'u2', dayOfWeek: 'Monday', time: '10:00 AM' }
   ],
   fees: [
-    { id: 'fee1', studentId: 'u3', totalAmount: 5000, paidAmount: 2000, dueDate: new Date(Date.now() + 10*86400000).toISOString().split('T')[0], status: 'Partial', history: [{ amount: 2000, date: new Date(Date.now() - 5*86400000).toISOString(), receipt: 'REC-001' }] }
+    { id: 'fee1', studentId: 'u3', totalAmount: 5000, paidAmount: 2000, dueDate: new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0], status: 'Partial', history: [{ amount: 2000, date: new Date(Date.now() - 5 * 86400000).toISOString(), receipt: 'REC-001' }] }
   ],
   notifications: [
     { id: 'notif1', userId: 'u3', message: 'Homework Assigned for Math', type: 'homework', isRead: false, createdAt: new Date().toISOString() }
@@ -73,11 +72,11 @@ export const api = {
   login: async (email, password) => {
     const db = getDB();
     const user = db.users.find(u => u.email === email);
-    
+
     if (!user) throw new Error("Invalid email or password");
     if (user.password !== password) throw new Error("Invalid email or password");
     if (user.status && user.status !== 'Active') throw new Error("Your account is currently inactive. Please contact admin.");
-    
+
     let profile = { name: email.split('@')[0] }; // fallback
     if (user.role === 'student') {
       const p = db.students.find(s => s.userId === user.id);
@@ -112,7 +111,7 @@ export const api = {
   },
   createStudent: async (studentData) => {
     const db = getDB();
-    
+
     if (db.users.find(u => u.email === studentData.email)) {
       throw new Error("Student email address is already in use.");
     }
@@ -128,7 +127,7 @@ export const api = {
       status: studentData.status || 'Active'
     });
 
-    const newStudent = { 
+    const newStudent = {
       id: studentId,
       userId: userId,
       name: studentData.name,
@@ -174,7 +173,7 @@ export const api = {
     saveDB(db);
     return newStudent;
   },
-  
+
   getParentByUserId: async (userId) => {
     const db = getDB();
     return db.parents.find(p => p.userId === userId);
@@ -234,7 +233,7 @@ export const api = {
     const db = getDB();
     const newLog = { ...logData, id: generateId(), date: new Date().toISOString() };
     db.progressLogs.push(newLog);
-    
+
     db.notifications.push({
       id: 'n' + generateId(),
       userId: logData.studentId,
@@ -243,16 +242,16 @@ export const api = {
       isRead: false,
       createdAt: new Date().toISOString()
     });
-    
+
     saveDB(db);
     return newLog;
   },
-  
+
   createAttendance: async (attData) => {
     const db = getDB();
     const newAtt = { ...attData, id: 'att' + generateId() };
     db.attendance.push(newAtt);
-    
+
     if (attData.status === 'Absent' || attData.status === 'Leave') {
       db.notifications.push({
         id: 'n' + generateId(),
@@ -263,23 +262,23 @@ export const api = {
         createdAt: new Date().toISOString()
       });
     }
-    
+
     saveDB(db);
     return newAtt;
   },
-  
+
   getAttendance: async (filters = {}) => {
     const db = getDB();
     let att = db.attendance;
     if (filters.studentId) att = att.filter(a => a.studentId === filters.studentId);
     return att;
   },
-  
+
   createHomework: async (hwData) => {
     const db = getDB();
     const newHw = { ...hwData, id: 'hw' + generateId() };
     db.homework.push(newHw);
-    
+
     db.notifications.push({
       id: 'n' + generateId(),
       userId: hwData.studentId,
@@ -288,7 +287,7 @@ export const api = {
       isRead: false,
       createdAt: new Date().toISOString()
     });
-    
+
     saveDB(db);
     return newHw;
   },
@@ -299,7 +298,7 @@ export const api = {
     if (filters.studentId) hw = hw.filter(h => h.studentId === filters.studentId);
     return hw;
   },
-  
+
   getSchedules: async (filters = {}) => {
     const db = getDB();
     let schedules = db.schedules;
@@ -307,7 +306,7 @@ export const api = {
     if (filters.class) schedules = schedules.filter(s => s.class === filters.class);
     return schedules;
   },
-  
+
   getFees: async (filters = {}) => {
     const db = getDB();
     let fees = db.fees;
@@ -378,6 +377,104 @@ export const api = {
     db.fees.push(newFee);
     saveDB(db);
     return newFee;
+  },
+
+  updateStudent: async (studentUserId, updatedData) => {
+    const db = getDB();
+    const studentIdx = db.students.findIndex(s => s.userId === studentUserId);
+    if (studentIdx === -1) throw new Error('Student record not found.');
+
+    const userIdx = db.users.findIndex(u => u.id === studentUserId);
+    if (userIdx === -1) throw new Error('Student user account not found.');
+
+    // Check email uniqueness if email is being changed
+    const currentEmail = db.users[userIdx].email;
+    if (updatedData.email && updatedData.email !== currentEmail) {
+      const emailTaken = db.users.find(u => u.email === updatedData.email && u.id !== studentUserId);
+      if (emailTaken) throw new Error('Email address is already in use by another account.');
+    }
+
+    // Update user auth record
+    if (updatedData.email) db.users[userIdx].email = updatedData.email;
+    if (updatedData.status) db.users[userIdx].status = updatedData.status;
+    if (updatedData.password && updatedData.password.trim() !== '') {
+      db.users[userIdx].password = updatedData.password;
+    }
+
+    // Update student profile record
+    const { email, password, confirmPassword, ...profileData } = updatedData;
+    db.students[studentIdx] = {
+      ...db.students[studentIdx],
+      ...profileData,
+    };
+
+    saveDB(db);
+    const user = db.users[userIdx];
+    return { ...db.students[studentIdx], email: user.email, status: user.status };
+  },
+
+  updateTutor: async (tutorUserId, updatedData) => {
+    const db = getDB();
+    const tutorIdx = db.tutors.findIndex(t => t.userId === tutorUserId);
+    if (tutorIdx === -1) throw new Error('Tutor record not found.');
+
+    const userIdx = db.users.findIndex(u => u.id === tutorUserId);
+    if (userIdx === -1) throw new Error('Tutor user account not found.');
+
+    // Check email uniqueness if email is being changed
+    const currentEmail = db.users[userIdx].email;
+    if (updatedData.email && updatedData.email !== currentEmail) {
+      const emailTaken = db.users.find(u => u.email === updatedData.email && u.id !== tutorUserId);
+      if (emailTaken) throw new Error('Email address is already in use by another account.');
+    }
+
+    // Update user auth record
+    if (updatedData.email) db.users[userIdx].email = updatedData.email;
+    if (updatedData.status) db.users[userIdx].status = updatedData.status;
+    if (updatedData.password && updatedData.password.trim() !== '') {
+      db.users[userIdx].password = updatedData.password;
+    }
+
+    // Update tutor profile record (exclude auth-only fields)
+    const { email, password, confirmPassword, ...profileData } = updatedData;
+    db.tutors[tutorIdx] = {
+      ...db.tutors[tutorIdx],
+      ...profileData,
+    };
+
+    saveDB(db);
+    const user = db.users[userIdx];
+    return { ...db.tutors[tutorIdx], email: user.email, status: user.status };
+  },
+
+  checkAdminExists: () => {
+    const db = getDB();
+    return db.users.some(u => u.role === 'admin');
+  },
+
+  createAdmin: async (adminData) => {
+    const db = getDB();
+    if (db.users.some(u => u.role === 'admin')) {
+      throw new Error('An admin account already exists.');
+    }
+    if (db.users.find(u => u.email === adminData.email)) {
+      throw new Error('This email address is already in use.');
+    }
+
+    const userId = 'u' + generateId();
+    const newUser = {
+      id: userId,
+      role: 'admin',
+      email: adminData.email,
+      password: adminData.password,
+      status: 'Active',
+      name: adminData.name,
+      academyName: adminData.academyName,
+      phone: adminData.phone || '',
+    };
+    db.users.push(newUser);
+    saveDB(db);
+    return newUser;
   },
 
   getAdvancedStats: async () => {
