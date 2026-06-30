@@ -1,0 +1,51 @@
+.parent-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.parent-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-6);
+}
+
+@media (max-width: 1024px) {
+  .parent-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.homework-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.homework-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-3);
+  background-color: var(--color-surface-hover);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.hw-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.hw-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.hw-meta {
+  margin: var(--spacing-1) 0 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}

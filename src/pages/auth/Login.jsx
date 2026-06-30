@@ -23,19 +23,12 @@ export const Login = () => {
       if (user.role === 'admin') navigate('/admin');
       else if (user.role === 'tutor') navigate('/tutor');
       else if (user.role === 'student') navigate('/student');
+      else if (user.role === 'parent') navigate('/parent');
     } catch (err) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Demo helper
-  const fillDemo = (role) => {
-    setPassword('password');
-    if (role === 'admin') setEmail('admin@mentorlog.com');
-    if (role === 'tutor') setEmail('tutor1@mentorlog.com');
-    if (role === 'student') setEmail('student1@mentorlog.com');
   };
 
   return (
@@ -73,15 +66,6 @@ export const Login = () => {
                 Sign In
               </Button>
             </form>
-
-            <div className="demo-accounts">
-              <p>Demo Accounts:</p>
-              <div className="demo-buttons">
-                <Button variant="secondary" size="md" onClick={() => fillDemo('admin')}>Admin</Button>
-                <Button variant="secondary" size="md" onClick={() => fillDemo('tutor')}>Tutor</Button>
-                <Button variant="secondary" size="md" onClick={() => fillDemo('student')}>Student</Button>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>

@@ -16,6 +16,9 @@ const navItems = {
   ],
   student: [
     { label: 'My Progress', path: '/student', icon: LayoutDashboard },
+  ],
+  parent: [
+    { label: 'Parent Portal', path: '/parent', icon: LayoutDashboard },
   ]
 };
 

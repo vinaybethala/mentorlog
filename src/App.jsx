@@ -11,6 +11,7 @@ import { AdminTutors } from './pages/admin/AdminTutors';
 import { TutorDashboard } from './pages/tutor/TutorDashboard';
 import { TutorLog } from './pages/tutor/TutorLog';
 import { StudentDashboard } from './pages/student/StudentDashboard';
+import { ParentDashboard } from './pages/parent/ParentDashboard';
 
 function App() {
   return (
@@ -36,6 +37,11 @@ function App() {
           {/* Student Routes */}
           <Route path="/student" element={<Layout role="student" />}>
             <Route index element={<StudentDashboard />} />
+          </Route>
+
+          {/* Parent Routes */}
+          <Route path="/parent" element={<Layout role="parent" />}>
+            <Route index element={<ParentDashboard />} />
           </Route>
         </Routes>
       </BrowserRouter>
