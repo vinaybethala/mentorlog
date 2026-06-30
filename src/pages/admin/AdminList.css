@@ -187,4 +187,53 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Mobile Responsive ──────────────────────────────── */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .page-header .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .list-toolbar {
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .ui-table th, .ui-table td {
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: 0.82rem;
+  }
+
+  .toast {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    min-width: unset;
+    max-width: unset;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.25rem;
+  }
+}
 

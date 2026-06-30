@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LogOut, LayoutDashboard, Users, BookOpen, DollarSign, BarChart2 } from 'lucide-react';
+import { LogOut, LayoutDashboard, Users, BookOpen, DollarSign, BarChart2, Menu, X } from 'lucide-react';
 import { NotificationBell } from '../ui/NotificationBell';
 import './Layout.css';
 
@@ -29,6 +29,7 @@ export const Layout = ({ role }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -47,7 +48,8 @@ export const Layout = ({ role }) => {
 
   return (
     <div className="layout-container">
-      <aside className="sidebar">
+      <div className={`mobile-overlay ${mobileMenuOpen ? 'open' : ''}`} onClick={() => setMobileMenuOpen(false)}></div>
+      <aside className={`sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="logo">MentorLog</div>
           <span className="role-badge">{user.role}</span>
@@ -58,6 +60,7 @@ export const Layout = ({ role }) => {
               key={item.path} 
               to={item.path} 
               className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
             >
               <item.icon size={20} />
               <span>{item.label}</span>
@@ -73,8 +76,13 @@ export const Layout = ({ role }) => {
       </aside>
       <main className="main-content">
         <header className="top-header glass">
-          <div className="header-title">
-            <h2>Welcome back, {user.name}</h2>
+          <div className="header-left-mobile">
+            <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+            <div className="header-title">
+              <h2>Welcome, {user.name}</h2>
+            </div>
           </div>
           <div className="header-profile">
             <NotificationBell />
