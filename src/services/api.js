@@ -235,7 +235,6 @@ export const api = {
     const newLog = { ...logData, id: generateId(), date: new Date().toISOString() };
     db.progressLogs.push(newLog);
     
-    // Auto-create notification for student/parent
     db.notifications.push({
       id: 'n' + generateId(),
       userId: logData.studentId,
@@ -249,6 +248,26 @@ export const api = {
     return newLog;
   },
   
+  createAttendance: async (attData) => {
+    const db = getDB();
+    const newAtt = { ...attData, id: 'att' + generateId() };
+    db.attendance.push(newAtt);
+    
+    if (attData.status === 'Absent' || attData.status === 'Leave') {
+      db.notifications.push({
+        id: 'n' + generateId(),
+        userId: attData.studentId,
+        message: `Attendance marked as ${attData.status} for ${attData.subject} on ${attData.date}`,
+        type: 'attendance',
+        isRead: false,
+        createdAt: new Date().toISOString()
+      });
+    }
+    
+    saveDB(db);
+    return newAtt;
+  },
+  
   getAttendance: async (filters = {}) => {
     const db = getDB();
     let att = db.attendance;
@@ -256,11 +275,37 @@ export const api = {
     return att;
   },
   
+  createHomework: async (hwData) => {
+    const db = getDB();
+    const newHw = { ...hwData, id: 'hw' + generateId() };
+    db.homework.push(newHw);
+    
+    db.notifications.push({
+      id: 'n' + generateId(),
+      userId: hwData.studentId,
+      message: `New homework assigned for ${hwData.subject}: ${hwData.topic}`,
+      type: 'homework',
+      isRead: false,
+      createdAt: new Date().toISOString()
+    });
+    
+    saveDB(db);
+    return newHw;
+  },
+
   getHomework: async (filters = {}) => {
     const db = getDB();
     let hw = db.homework;
     if (filters.studentId) hw = hw.filter(h => h.studentId === filters.studentId);
     return hw;
+  },
+  
+  getSchedules: async (filters = {}) => {
+    const db = getDB();
+    let schedules = db.schedules;
+    if (filters.tutorId) schedules = schedules.filter(s => s.tutorId === filters.tutorId);
+    if (filters.class) schedules = schedules.filter(s => s.class === filters.class);
+    return schedules;
   },
   
   getFees: async (filters = {}) => {

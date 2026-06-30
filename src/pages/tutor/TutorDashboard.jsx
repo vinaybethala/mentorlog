@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Card, CardContent, CardHeader, Button } from '../../components/ui';
+import { Card, CardContent, CardHeader, Button, ScheduleWidget } from '../../components/ui';
 import { useNavigate } from 'react-router-dom';
 import { Users, FileText } from 'lucide-react';
 import './Tutor.css';
@@ -19,6 +19,10 @@ export const TutorDashboard = () => {
         <Button size="lg" onClick={() => navigate('/tutor/log')}>
           <FileText size={18} style={{ marginRight: '8px' }} /> Log New Session
         </Button>
+      </div>
+
+      <div style={{ marginTop: '2rem' }}>
+        <ScheduleWidget userRole="tutor" userId={user.id} />
       </div>
 
       <div className="stats-grid">
