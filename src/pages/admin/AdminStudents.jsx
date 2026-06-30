@@ -1,19 +1,46 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
-import { Card, CardContent, CardHeader, Button, Badge } from '../../components/ui';
+import { Card, CardContent, Button, Badge, Modal, Input } from '../../components/ui';
 import { Plus, Search } from 'lucide-react';
 import './AdminList.css';
 
 export const AdminStudents = () => {
   const [students, setStudents] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: '', class: '', email: '', parentContact: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
+  const fetchStudents = async () => {
+    const data = await api.getStudents();
+    setStudents(data);
+  };
+
   useEffect(() => {
-    const fetchStudents = async () => {
-      const data = await api.getStudents();
-      setStudents(data);
-    };
     fetchStudents();
   }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddStudent = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await api.createStudent({
+        ...formData,
+        subjects: ['Math', 'Science'], // Default subjects for demo
+      });
+      await fetchStudents();
+      setIsModalOpen(false);
+      setFormData({ name: '', class: '', email: '', parentContact: '' });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="admin-list-page">
@@ -22,7 +49,9 @@ export const AdminStudents = () => {
           <h1 className="page-title">Manage Students</h1>
           <p className="page-subtitle">View and manage all enrolled students in the academy.</p>
         </div>
-        <Button size="lg"><Plus size={18} style={{ marginRight: '8px' }}/> Add Student</Button>
+        <Button size="lg" onClick={() => setIsModalOpen(true)}>
+          <Plus size={18} style={{ marginRight: '8px' }}/> Add Student
+        </Button>
       </div>
 
       <Card>
@@ -73,6 +102,20 @@ export const AdminStudents = () => {
           )}
         </div>
       </Card>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Student">
+        <form onSubmit={handleAddStudent} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <Input label="Full Name" name="name" value={formData.name} onChange={handleChange} required />
+          <Input label="Email Address" name="email" type="email" value={formData.email} onChange={handleChange} required />
+          <Input label="Class / Grade" name="class" value={formData.class} onChange={handleChange} required />
+          <Input label="Parent Contact" name="parentContact" value={formData.parentContact} onChange={handleChange} required />
+          
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+            <Button variant="secondary" onClick={() => setIsModalOpen(false)} type="button">Cancel</Button>
+            <Button type="submit" isLoading={isSubmitting}>Add Student</Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
