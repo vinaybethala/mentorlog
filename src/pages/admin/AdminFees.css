@@ -1,0 +1,8 @@
+.admin-fees-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.text-success { color: #16a34a; font-weight: 600; }
+.text-danger { color: #dc2626; font-weight: 600; }

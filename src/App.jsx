@@ -8,6 +8,8 @@ import { Login } from './pages/auth/Login';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminStudents } from './pages/admin/AdminStudents';
 import { AdminTutors } from './pages/admin/AdminTutors';
+import { AdminFees } from './pages/admin/AdminFees';
+import { AdminReports } from './pages/admin/AdminReports';
 import { TutorDashboard } from './pages/tutor/TutorDashboard';
 import { TutorLog } from './pages/tutor/TutorLog';
 import { StudentDashboard } from './pages/student/StudentDashboard';
@@ -26,6 +28,8 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="students" element={<AdminStudents />} />
             <Route path="tutors" element={<AdminTutors />} />
+            <Route path="fees" element={<AdminFees />} />
+            <Route path="reports" element={<AdminReports />} />
           </Route>
 
           {/* Tutor Routes */}
