@@ -1,14 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
-import { Card, CardContent, Button, Badge, Modal, Input } from '../../components/ui';
+import { Card, CardContent, Button, Badge, Modal, Input, Select } from '../../components/ui';
 import { Plus, Search } from 'lucide-react';
 import './AdminList.css';
 
 export const AdminStudents = () => {
   const [students, setStudents] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', class: '', email: '', parentContact: '' });
+  const [formData, setFormData] = useState({
+    name: '', age: '', dob: '', gender: '', class: '', subjects: '',
+    parentName: '', parentContact: '', parentEmail: '', address: '',
+    admissionDate: '', email: '', password: '', confirmPassword: '', status: 'Active'
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   
   const fetchStudents = async () => {
     const data = await api.getStudents();
@@ -26,17 +32,33 @@ export const AdminStudents = () => {
 
   const handleAddStudent = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+    
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await api.createStudent({
         ...formData,
-        subjects: ['Math', 'Science'], // Default subjects for demo
+        subjects: formData.subjects.split(',').map(s => s.trim()).filter(s => s)
       });
       await fetchStudents();
-      setIsModalOpen(false);
-      setFormData({ name: '', class: '', email: '', parentContact: '' });
+      setSuccess('Student account created successfully!');
+      setTimeout(() => {
+        setIsModalOpen(false);
+        setFormData({
+          name: '', age: '', dob: '', gender: '', class: '', subjects: '',
+          parentName: '', parentContact: '', parentEmail: '', address: '',
+          admissionDate: '', email: '', password: '', confirmPassword: '', status: 'Active'
+        });
+        setSuccess('');
+      }, 2000);
     } catch (err) {
-      console.error(err);
+      setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -103,16 +125,60 @@ export const AdminStudents = () => {
         </div>
       </Card>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Student">
-        <form onSubmit={handleAddStudent} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <Input label="Full Name" name="name" value={formData.name} onChange={handleChange} required />
-          <Input label="Email Address" name="email" type="email" value={formData.email} onChange={handleChange} required />
-          <Input label="Class / Grade" name="class" value={formData.class} onChange={handleChange} required />
-          <Input label="Parent Contact" name="parentContact" value={formData.parentContact} onChange={handleChange} required />
+      <Modal isOpen={isModalOpen} onClose={() => !isSubmitting && setIsModalOpen(false)} title="Create Student Account">
+        <form onSubmit={handleAddStudent} className="complex-form">
+          {error && <div className="form-error">{error}</div>}
+          {success && <div className="form-success">{success}</div>}
           
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-            <Button variant="secondary" onClick={() => setIsModalOpen(false)} type="button">Cancel</Button>
-            <Button type="submit" isLoading={isSubmitting}>Add Student</Button>
+          <div className="form-section">
+            <h4 className="section-title">Personal Details</h4>
+            <div className="form-grid">
+              <Input label="Full Name" name="name" value={formData.name} onChange={handleChange} required />
+              <Input label="Age" name="age" type="number" value={formData.age} onChange={handleChange} required />
+              <Input label="Date of Birth" name="dob" type="date" value={formData.dob} onChange={handleChange} required />
+              <Select label="Gender" name="gender" value={formData.gender} onChange={handleChange} required options={[
+                { value: 'Male', label: 'Male' },
+                { value: 'Female', label: 'Female' },
+                { value: 'Other', label: 'Other' }
+              ]} />
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h4 className="section-title">Academic Details</h4>
+            <div className="form-grid">
+              <Input label="Class / Grade" name="class" value={formData.class} onChange={handleChange} required />
+              <Input label="Subjects (comma separated)" name="subjects" value={formData.subjects} onChange={handleChange} placeholder="Math, Science" required />
+              <Input label="Admission Date" name="admissionDate" type="date" value={formData.admissionDate} onChange={handleChange} required />
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h4 className="section-title">Parent / Guardian Details</h4>
+            <div className="form-grid">
+              <Input label="Parent Name" name="parentName" value={formData.parentName} onChange={handleChange} required />
+              <Input label="Parent Phone" name="parentContact" value={formData.parentContact} onChange={handleChange} required />
+              <Input label="Parent Email" name="parentEmail" type="email" value={formData.parentEmail} onChange={handleChange} required />
+              <Input label="Address" name="address" value={formData.address} onChange={handleChange} required />
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h4 className="section-title">Account Credentials</h4>
+            <div className="form-grid">
+              <Input label="Student Email" name="email" type="email" value={formData.email} onChange={handleChange} required />
+              <Select label="Status" name="status" value={formData.status} onChange={handleChange} required options={[
+                { value: 'Active', label: 'Active' },
+                { value: 'Inactive', label: 'Inactive' }
+              ]} />
+              <Input label="Password" name="password" type="password" value={formData.password} onChange={handleChange} required />
+              <Input label="Confirm Password" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} required />
+            </div>
+          </div>
+          
+          <div className="form-actions">
+            <Button variant="secondary" onClick={() => setIsModalOpen(false)} type="button" disabled={isSubmitting}>Cancel</Button>
+            <Button type="submit" isLoading={isSubmitting}>Create Account</Button>
           </div>
         </form>
       </Modal>
