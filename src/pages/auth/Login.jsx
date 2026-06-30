@@ -2,21 +2,120 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
-import { Button, Input, Card, CardContent } from '../../components/ui';
-import { BookOpen, ShieldCheck } from 'lucide-react';
+import { 
+  BookOpen, Target, Users, LineChart, CheckCircle, 
+  ShieldCheck, Zap, Cloud, Mail, Lock, Eye, EyeOff, 
+  Moon, Sun, Loader2, Building, Phone
+} from 'lucide-react';
 import './Login.css';
 
-// ── Login Form ──────────────────────────────────────────────────
-const LoginForm = ({ onNavigate }) => {
+// ── Shared Left Side Content ──────────────────────────────────────────────
+const LeftSideContent = () => (
+  <div className="login-left">
+    <img 
+      src="https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=2070&auto=format&fit=crop" 
+      alt="Modern Classroom" 
+      className="login-bg-image" 
+    />
+    <div className="login-bg-overlay"></div>
+    <div className="login-bg-gradient"></div>
+    
+    <div className="login-shape login-shape-1"></div>
+    <div className="login-shape login-shape-2"></div>
+    
+    <div className="login-left-content">
+      <div className="login-brand">
+        <BookOpen size={40} className="login-brand-icon" />
+        <h1>MentorLog</h1>
+      </div>
+      
+      <div className="login-hero-text">
+        <h2>Empowering Academies.<br/>Elevating Learning.</h2>
+        <p>The intelligent academy management platform that connects administrators, tutors, students, and parents through AI-powered progress tracking, attendance, analytics, and performance insights.</p>
+      </div>
+      
+      <div className="login-features">
+        <div className="login-feature-item">
+          <Target size={24} className="login-feature-icon" />
+          <div className="login-feature-text">
+            <h3>AI Student Progress Tracking</h3>
+            <p>Track every student's academic journey in real time.</p>
+          </div>
+        </div>
+        <div className="login-feature-item">
+          <Users size={24} className="login-feature-icon" />
+          <div className="login-feature-text">
+            <h3>Tutor Management</h3>
+            <p>Manage tutors, schedules, attendance and performance effortlessly.</p>
+          </div>
+        </div>
+        <div className="login-feature-item">
+          <LineChart size={24} className="login-feature-icon" />
+          <div className="login-feature-text">
+            <h3>Smart Analytics</h3>
+            <p>Understand student performance using AI insights.</p>
+          </div>
+        </div>
+        <div className="login-feature-item">
+          <CheckCircle size={24} className="login-feature-icon" />
+          <div className="login-feature-text">
+            <h3>Homework & Attendance</h3>
+            <p>Everything managed from one intelligent platform.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="login-trust">
+        <span><ShieldCheck size={18} /> Secure Platform</span>
+        <span><Zap size={18} /> Fast Performance</span>
+        <span><Cloud size={18} /> Cloud Ready</span>
+        <span><LineChart size={18} /> Real-Time Analytics</span>
+        <span><Users size={18} /> Trusted by Leading Academies</span>
+      </div>
+    </div>
+  </div>
+);
+
+// ── Main Login Page ──────────────────────────────────────────────
+export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
+  // Theme state
+  const [theme, setTheme] = useState('dark');
+  
+  // Setup state
+  const [adminExists, setAdminExists] = useState(null);
+  const [setupDone, setSetupDone] = useState(false);
+  const [isRegisteringAdmin, setIsRegisteringAdmin] = useState(false);
+  
+  // Role State
+  const [loginRole, setLoginRole] = useState('admin');
 
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  useEffect(() => {
+    const exists = api.checkAdminExists();
+    setAdminExists(exists);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
+  const handleRoleChange = (role) => {
+    setLoginRole(role);
+    setError('');
+    setEmail('');
+    setPassword('');
+    setIsRegisteringAdmin(false);
+  };
+
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
@@ -33,53 +132,174 @@ const LoginForm = ({ onNavigate }) => {
     }
   };
 
-  return (
-    <Card className="login-card">
-      <CardContent>
-        <div className="login-header">
-          <h2>Welcome Back</h2>
-          <p>Sign in to your account to continue</p>
-        </div>
+  if (adminExists === null) return null;
+  const showSetup = isRegisteringAdmin;
 
-        <form onSubmit={handleSubmit} className="login-form" autoComplete="on">
-          <Input
-            label="Email Address"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="username"
-            required
-          />
-          <Input
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-            required
-          />
-          {error && <div className="login-error">{error}</div>}
-          <Button type="submit" size="lg" className="w-full mt-4" isLoading={isLoading}>
-            Sign In
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+  return (
+    <div className="login-wrapper" data-theme={theme}>
+      <LeftSideContent />
+      
+      <div className="login-right">
+        <button 
+          className="login-theme-toggle" 
+          onClick={toggleTheme}
+          aria-label="Toggle Theme"
+        >
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+
+        <div className="login-card-modern">
+          {showSetup ? (
+            <AdminSetupForm 
+              onSuccess={() => {
+                setIsRegisteringAdmin(false);
+                setSetupDone(true);
+                setAdminExists(true);
+              }}
+              onCancel={() => setIsRegisteringAdmin(false)}
+            />
+          ) : (
+            <>
+              <div className="login-card-header">
+                <div className="login-card-icon">
+                  <BookOpen size={28} />
+                </div>
+                <h2>Welcome Back 👋</h2>
+                <p>Sign in to continue to your MentorLog workspace.</p>
+              </div>
+
+              <div className="login-role-tabs">
+                <button 
+                  className={`login-role-tab ${loginRole === 'admin' ? 'active' : ''}`}
+                  onClick={() => handleRoleChange('admin')}
+                  type="button"
+                >
+                  Admin
+                </button>
+                <button 
+                  className={`login-role-tab ${loginRole === 'tutor' ? 'active' : ''}`}
+                  onClick={() => handleRoleChange('tutor')}
+                  type="button"
+                >
+                  Tutor
+                </button>
+                <button 
+                  className={`login-role-tab ${loginRole === 'student' ? 'active' : ''}`}
+                  onClick={() => handleRoleChange('student')}
+                  type="button"
+                >
+                  Student
+                </button>
+              </div>
+
+              {setupDone && (
+                <div className="login-error-msg" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.2)', marginBottom: '1.5rem' }}>
+                  ✅ Admin account created! Please sign in.
+                </div>
+              )}
+
+              <form onSubmit={handleLoginSubmit} className="login-form-modern" autoComplete="on">
+                
+                <div className="login-input-group">
+                  <input
+                    type="email"
+                    className="login-input"
+                    placeholder=" "
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete={loginRole === 'admin' ? 'off' : 'username'}
+                    name={loginRole === 'admin' ? 'admin_email_no_autofill' : 'email'}
+                  />
+                  <Mail className="login-input-icon" size={20} />
+                  <label className="login-label">Email Address</label>
+                </div>
+
+                <div className="login-input-group">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="login-input"
+                    placeholder=" "
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete={loginRole === 'admin' ? 'new-password' : 'current-password'}
+                    name={loginRole === 'admin' ? 'admin_password_no_autofill' : 'password'}
+                  />
+                  <Lock className="login-input-icon" size={20} />
+                  <label className="login-label">Password</label>
+                  <button 
+                    type="button" 
+                    className="login-input-action"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+
+                <div className="login-options">
+                  <label className="login-checkbox-group">
+                    <input type="checkbox" className="login-checkbox" />
+                    <span>Remember me</span>
+                  </label>
+                  {loginRole === 'admin' && (
+                    <a href="#" className="login-forgot-link">Forgot Password?</a>
+                  )}
+                </div>
+
+                {error && (
+                  <div className="login-error-msg">
+                    <ShieldCheck size={18} />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <button type="submit" className="login-submit-btn" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="login-spinner" size={20} />
+                      Authenticating...
+                    </>
+                  ) : (
+                    'Sign In'
+                  )}
+                </button>
+              </form>
+
+              {loginRole !== 'admin' ? (
+                <div className="login-bottom-text">
+                  Need access? <br />
+                  Please contact your academy administrator.
+                </div>
+              ) : (
+                <div className="login-bottom-text">
+                  Don't have an account? <br />
+                  <button 
+                    type="button" 
+                    className="login-forgot-link" 
+                    onClick={() => setIsRegisteringAdmin(true)}
+                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 'inherit', marginTop: '0.5rem' }}
+                  >
+                    Register for Academy
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
-// ── First-Time Admin Setup Form ──────────────────────────────────
-const AdminSetupForm = ({ onSuccess }) => {
+// ── Admin Setup Form (Restyled to match new theme) ──────────────────────
+const AdminSetupForm = ({ onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    academyName: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
+    name: '', academyName: '', email: '', phone: '', password: '', confirmPassword: '',
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -91,16 +311,13 @@ const AdminSetupForm = ({ onSuccess }) => {
     setError('');
 
     if (!formData.name.trim() || !formData.email.trim() || !formData.password.trim()) {
-      setError('Name, email, and password are required.');
-      return;
+      setError('Name, email, and password are required.'); return;
     }
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
+      setError('Password must be at least 6 characters.'); return;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
-      return;
+      setError('Passwords do not match.'); return;
     }
 
     setIsLoading(true);
@@ -121,125 +338,77 @@ const AdminSetupForm = ({ onSuccess }) => {
   };
 
   return (
-    <Card className="login-card">
-      <CardContent>
-        <div className="login-header">
-          <div className="setup-icon-wrapper">
-            <ShieldCheck size={32} className="setup-icon" />
-          </div>
-          <h2>Set Up Admin Account</h2>
-          <p>No admin account found. Create the primary admin account to get started.</p>
+    <>
+      <div className="login-card-header">
+        <div className="login-card-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+          <ShieldCheck size={28} />
+        </div>
+        <h2>Set Up Admin Account</h2>
+        <p>Create the primary administrator account to get started.</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="login-form-modern" autoComplete="off">
+        <div className="login-input-group">
+          <input type="text" name="name" className="login-input" placeholder=" " value={formData.name} onChange={handleChange} required />
+          <Users className="login-input-icon" size={20} />
+          <label className="login-label">Full Name</label>
         </div>
 
-        <form onSubmit={handleSubmit} className="login-form" autoComplete="off">
-          <Input
-            label="Full Name"
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            autoComplete="off"
-            required
-          />
-          <Input
-            label="Academy Name"
-            name="academyName"
-            type="text"
-            value={formData.academyName}
-            onChange={handleChange}
-            autoComplete="off"
-          />
-          <Input
-            label="Admin Email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            autoComplete="off"
-            required
-          />
-          <Input
-            label="Phone Number (optional)"
-            name="phone"
-            type="tel"
-            value={formData.phone}
-            onChange={handleChange}
-            autoComplete="off"
-          />
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            autoComplete="new-password"
-            required
-          />
-          <Input
-            label="Confirm Password"
-            name="confirmPassword"
-            type="password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            autoComplete="new-password"
-            required
-          />
-          {error && <div className="login-error">{error}</div>}
-          <Button type="submit" size="lg" className="w-full mt-4" isLoading={isLoading}>
-            Create Admin Account
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
-  );
-};
+        <div className="login-input-group">
+          <input type="text" name="academyName" className="login-input" placeholder=" " value={formData.academyName} onChange={handleChange} />
+          <Building className="login-input-icon" size={20} />
+          <label className="login-label">Academy Name</label>
+        </div>
 
-// ── Main Login Page ──────────────────────────────────────────────
-export const Login = () => {
-  // null = still checking, true = admin exists, false = first-time setup
-  const [adminExists, setAdminExists] = useState(null);
-  const [setupDone, setSetupDone] = useState(false);
+        <div className="login-input-group">
+          <input type="email" name="email" className="login-input" placeholder=" " value={formData.email} onChange={handleChange} required />
+          <Mail className="login-input-icon" size={20} />
+          <label className="login-label">Admin Email</label>
+        </div>
 
-  useEffect(() => {
-    // Check synchronously — no async needed since it reads localStorage
-    const exists = api.checkAdminExists();
-    setAdminExists(exists);
-  }, []);
+        <div className="login-input-group">
+          <input type="tel" name="phone" className="login-input" placeholder=" " value={formData.phone} onChange={handleChange} />
+          <Phone className="login-input-icon" size={20} />
+          <label className="login-label">Phone Number (optional)</label>
+        </div>
 
-  const handleSetupSuccess = () => {
-    // After creating admin, switch to login form
-    setSetupDone(true);
-    setAdminExists(true);
-  };
+        <div className="login-input-group">
+          <input type={showPassword ? 'text' : 'password'} name="password" className="login-input" placeholder=" " value={formData.password} onChange={handleChange} required />
+          <Lock className="login-input-icon" size={20} />
+          <label className="login-label">Password</label>
+          <button type="button" className="login-input-action" onClick={() => setShowPassword(!showPassword)}>
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
 
-  if (adminExists === null) {
-    // Brief loading while checking localStorage
-    return null;
-  }
+        <div className="login-input-group">
+          <input type={showPassword ? 'text' : 'password'} name="confirmPassword" className="login-input" placeholder=" " value={formData.confirmPassword} onChange={handleChange} required />
+          <Lock className="login-input-icon" size={20} />
+          <label className="login-label">Confirm Password</label>
+        </div>
 
-  const showSetup = !adminExists && !setupDone;
-
-  return (
-    <div className="login-container">
-      <div className="login-visual glass">
-        <BookOpen size={64} className="login-icon" />
-        <h1>MentorLog</h1>
-        <p>The premium academy management platform.</p>
-      </div>
-      <div className="login-form-container">
-        {showSetup ? (
-          <AdminSetupForm onSuccess={handleSetupSuccess} />
-        ) : (
-          <>
-            {setupDone && (
-              <div className="setup-success-banner">
-                ✅ Admin account created! Please sign in below.
-              </div>
-            )}
-            <LoginForm />
-          </>
+        {error && (
+          <div className="login-error-msg">
+            <ShieldCheck size={18} />
+            <span>{error}</span>
+          </div>
         )}
-      </div>
-    </div>
+
+        <button type="submit" className="login-submit-btn" disabled={isLoading}>
+          {isLoading ? (
+            <><Loader2 className="login-spinner" size={20} /> Setting Up...</>
+          ) : 'Create Admin Account'}
+        </button>
+        
+        <button 
+          type="button" 
+          onClick={onCancel}
+          style={{ background: 'none', border: 'none', color: 'var(--login-text-secondary)', cursor: 'pointer', marginTop: '1rem', width: '100%' }}
+        >
+          Back to Login
+        </button>
+      </form>
+    </>
   );
 };
+

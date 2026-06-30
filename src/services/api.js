@@ -454,9 +454,6 @@ export const api = {
 
   createAdmin: async (adminData) => {
     const db = getDB();
-    if (db.users.some(u => u.role === 'admin')) {
-      throw new Error('An admin account already exists.');
-    }
     if (db.users.find(u => u.email === adminData.email)) {
       throw new Error('This email address is already in use.');
     }
