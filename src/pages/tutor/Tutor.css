@@ -1,0 +1,61 @@
+.tutor-dashboard, .tutor-log-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.mt-6 {
+  margin-top: var(--spacing-6);
+}
+
+.subject-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+}
+
+.subject-tag {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid var(--color-primary-100);
+}
+
+.log-form-card {
+  max-width: 800px;
+}
+
+.log-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-6);
+}
+
+.form-row.full-width {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.success-banner {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-6);
+  font-weight: 500;
+  text-align: center;
+}
